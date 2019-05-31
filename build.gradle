@@ -1,3 +1,5 @@
+import java.nio.file.Path
+import java.nio.file.Paths
 
 buildscript {
     ext.shadowJarVersion = "1.2.3"
@@ -92,9 +94,10 @@ task installLibs(type: Copy) {
 }
 
 task createSpecs(dependsOn: [installKernel, installLibs]) {
-    String spec = new File('kernelspec/kernel.json.template').getText('UTF-8')
+    Path kernelSpecPath = Paths.get("${projectDir}/kernelspec/kernel.json.template")
+    String spec = kernelSpecPath.toAbsolutePath().toFile().getText('UTF-8')
     File kernelFile = files { shadowJar }.singleFile
-    spec = spec.replace("\${KERNEL_JAR_PATH}", "$installPath/${kernelFile.name}")
+    spec = spec.replace('${KERNEL_JAR_PATH}', "$installPath/${kernelFile.name}")
     String libsCp = files { configurations.deploy }.files.collect { "$installPath/${it.name}" } .join(File.pathSeparator)
     spec = spec.replace("\${RUNTIME_CLASSPATH}", libsCp)
     File installDir = new File("$installPath")
